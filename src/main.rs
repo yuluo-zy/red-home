@@ -9,9 +9,11 @@
 use anyhow::Context;
 use clap::Parser;
 use sqlx::postgres::PgPoolOptions;
+use tracing::Level;
+use tracing_subscriber::fmt;
 
-use realworld_axum_sqlx::config::Config;
-use realworld_axum_sqlx::http;
+use red_home::config::Config;
+use red_home::http;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -19,8 +21,7 @@ async fn main() -> anyhow::Result<()> {
     // since we're not going to use a `.env` file if we deploy this application.
     dotenv::dotenv().ok();
 
-    // Initialize the logger.
-    env_logger::init();
+    fmt().with_max_level(Level::INFO).init();
 
     // Parse our configuration from the environment.
     // This will exit with a help message if something is wrong.
@@ -35,7 +36,7 @@ async fn main() -> anyhow::Result<()> {
         //
         // If you're deploying your application with multiple replicas, then the total
         // across all replicas should not exceed the Postgres connection limit.
-        .max_connections(50)
+        .max_connections(10)
         .connect(&config.database_url)
         .await
         .context("could not connect to database_url")?;

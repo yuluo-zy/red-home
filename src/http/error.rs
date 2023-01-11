@@ -1,11 +1,11 @@
-use axum::body::{Bytes, Full, HttpBody};
 use axum::http::header::WWW_AUTHENTICATE;
-use axum::http::{HeaderMap, HeaderValue, Response, StatusCode};
-use axum::response::IntoResponse;
+use axum::http::{HeaderMap, HeaderValue, StatusCode};
+use axum::response;
 use axum::Json;
 use sqlx::error::DatabaseError;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use tracing::log;
 
 /// A common error type that can be used throughout the API.
 ///
@@ -31,7 +31,7 @@ pub enum Error {
     /// Return `422 Unprocessable Entity`
     ///
     /// This also serializes the `errors` map to JSON to satisfy the requirement for
-    /// `422 Unprocessable Entity` errors in the Realworld spec:
+    /// `422 Unprocessable Entity` errors in the red_home spec:
     /// https://realworld-docs.netlify.app/docs/specs/backend-specs/error-handling
     ///
     /// For a good API, the other status codes should also ideally map to some sort of JSON body
@@ -116,11 +116,8 @@ impl Error {
 ///
 /// By default, the generated `Display` impl is used to return a plaintext error message
 /// to the client.
-impl IntoResponse for Error {
-    type Body = Full<Bytes>;
-    type BodyError = <Full<Bytes> as HttpBody>::Error;
-
-    fn into_response(self) -> Response<Self::Body> {
+impl response::IntoResponse for Error {
+    fn into_response(self) -> response::Response {
         match self {
             Self::UnprocessableEntity { errors } => {
                 #[derive(serde::Serialize)]
@@ -137,7 +134,7 @@ impl IntoResponse for Error {
                     // for the `401 Unauthorized` response code:
                     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
                     //
-                    // The Realworld spec does not specify this:
+                    // The red_home spec does not specify this:
                     // https://realworld-docs.netlify.app/docs/specs/backend-specs/error-handling
                     //
                     // However, at Launchbadge we try to adhere to web standards wherever possible,
@@ -151,13 +148,11 @@ impl IntoResponse for Error {
             }
 
             Self::Sqlx(ref e) => {
-                // TODO: we probably want to use `tracing` instead
                 // so that this gets linked to the HTTP request by `TraceLayer`.
                 log::error!("SQLx error: {:?}", e);
             }
 
             Self::Anyhow(ref e) => {
-                // TODO: we probably want to use `tracing` instead
                 // so that this gets linked to the HTTP request by `TraceLayer`.
                 log::error!("Generic error: {:?}", e);
             }

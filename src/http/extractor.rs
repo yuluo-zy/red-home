@@ -1,15 +1,16 @@
 use crate::http::error::Error;
-use axum::body::Body;
-use axum::extract::{Extension, FromRequest, RequestParts};
-
+use axum::extract::{Extension, FromRequestParts};
 use crate::http::ApiContext;
 use async_trait::async_trait;
 use axum::http::header::AUTHORIZATION;
-use axum::http::HeaderValue;
-use hmac::{Hmac, NewMac};
+use axum::http::{HeaderValue};
+use axum::http::request::Parts;
+use hmac::{Hmac};
+use hmac::digest::KeyInit;
 use jwt::{SignWithKey, VerifyWithKey};
-use sha2::Sha384;
+use sha2::{Sha256, Sha384};
 use time::OffsetDateTime;
+use tracing::log;
 use uuid::Uuid;
 
 const DEFAULT_SESSION_LENGTH: time::Duration = time::Duration::weeks(2);
@@ -43,7 +44,7 @@ struct AuthUserClaims {
 
 impl AuthUser {
     pub(in crate::http) fn to_jwt(&self, ctx: &ApiContext) -> String {
-        let hmac = Hmac::<Sha384>::new_from_slice(ctx.config.hmac_key.as_bytes())
+        let hmac:Hmac<Sha256> =KeyInit::new_from_slice(ctx.config.hmac_key.as_bytes())
             .expect("HMAC-SHA-384 can accept any key length");
 
         AuthUserClaims {
@@ -147,42 +148,40 @@ impl MaybeAuthUser {
 // out of it that you couldn't write your own middleware for, except with a bunch of extra
 // boilerplate.
 #[async_trait]
-impl FromRequest for AuthUser {
+impl<S> FromRequestParts<S> for AuthUser
+    where
+        S: Send + Sync,
+{
     type Rejection = Error;
 
-    async fn from_request(req: &mut RequestParts<Body>) -> Result<Self, Self::Rejection> {
-        let ctx: Extension<ApiContext> = Extension::from_request(req)
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let ctx: Extension<ApiContext> = Extension::from_request_parts(parts, state)
             .await
             .expect("BUG: ApiContext was not added as an extension");
 
         // Get the value of the `Authorization` header, if it was sent at all.
-        let auth_header = req
-            .headers()
-            .ok_or(Error::Unauthorized)?
-            .get(AUTHORIZATION)
-            .ok_or(Error::Unauthorized)?;
+        let auth_header = parts
+            .headers
+            .get(AUTHORIZATION).ok_or(Error::Unauthorized)?;
 
         Self::from_authorization(&ctx, auth_header)
     }
 }
 
 #[async_trait]
-impl FromRequest for MaybeAuthUser {
+impl<S> FromRequestParts<S> for MaybeAuthUser
+    where
+        S: Send + Sync,
+{
     type Rejection = Error;
 
-    async fn from_request(req: &mut RequestParts<Body>) -> Result<Self, Self::Rejection> {
-        let ctx: Extension<ApiContext> = Extension::from_request(req)
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let ctx: Extension<ApiContext> = Extension::from_request_parts(parts, state)
             .await
             .expect("BUG: ApiContext was not added as an extension");
-
-        Ok(Self(
-            // Get the value of the `Authorization` header, if it was sent at all.
-            req.headers()
-                .and_then(|headers| {
-                    let auth_header = headers.get(AUTHORIZATION)?;
-                    Some(AuthUser::from_authorization(&ctx, auth_header))
-                })
-                .transpose()?,
+        let auth_header =  parts.headers.get(AUTHORIZATION).ok_or(Error::Unauthorized)?;
+        Ok(Self (
+            Some(AuthUser::from_authorization(&ctx, auth_header)).transpose()?
         ))
     }
 }

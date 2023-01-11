@@ -5,7 +5,7 @@ use futures::TryStreamExt;
 use crate::http;
 use crate::http::articles::{Article, ArticleFromQuery};
 use crate::http::extractor::{AuthUser, MaybeAuthUser};
-use crate::http::types::Timestamptz;
+use crate::http::types::TimestampsZ;
 use crate::http::ApiContext;
 
 #[derive(serde::Deserialize, Default)]
@@ -92,8 +92,8 @@ pub(in crate::http) async fn list_articles(
                 description,
                 body,
                 tag_list,
-                article.created_at "created_at: Timestamptz",
-                article.updated_at "updated_at: Timestamptz",
+                article.created_at "created_at: TimestampsZ",
+                article.updated_at "updated_at: TimestampsZ",
                 exists(select 1 from article_favorite where user_id = $1) "favorited!",
                 coalesce(
                     -- `count(*)` returns `NULL` if the query returned zero columns
@@ -181,8 +181,8 @@ pub(in crate::http) async fn feed_articles(
                 description,
                 body,
                 tag_list,
-                article.created_at "created_at: Timestamptz",
-                article.updated_at "updated_at: Timestamptz",
+                article.created_at "created_at: TimestampsZ",
+                article.updated_at "updated_at: TimestampsZ",
                 exists(select 1 from article_favorite where user_id = $1) "favorited!",
                 coalesce(
                     (select count(*) from article_favorite fav where fav.article_id = article.article_id),

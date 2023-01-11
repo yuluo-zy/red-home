@@ -1,6 +1,6 @@
 use crate::http::extractor::{AuthUser, MaybeAuthUser};
 use crate::http::profiles::Profile;
-use crate::http::types::Timestamptz;
+use crate::http::types::TimestampsZ;
 use crate::http::ApiContext;
 use crate::http::{Error, Result};
 use axum::extract::{Extension, Path};
@@ -41,8 +41,8 @@ struct AddComment {
 #[serde(rename_all = "camelCase")]
 struct Comment {
     id: i64,
-    created_at: Timestamptz,
-    updated_at: Timestamptz,
+    created_at: TimestampsZ,
+    updated_at: TimestampsZ,
     body: String,
     author: Profile,
 }
@@ -64,8 +64,8 @@ impl CommentFromQuery {
         Comment {
             id: self.comment_id,
             // doing this conversion in-code does save having to use the type overrides in query
-            created_at: Timestamptz(self.created_at),
-            updated_at: Timestamptz(self.updated_at),
+            created_at: TimestampsZ(self.created_at),
+            updated_at: TimestampsZ(self.updated_at),
             body: self.body,
             author: Profile {
                 username: self.author_username,

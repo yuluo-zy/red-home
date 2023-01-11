@@ -1,6 +1,7 @@
+use std::net::{SocketAddr};
 use crate::config::Config;
 use anyhow::Context;
-use axum::{AddExtensionLayer, Router};
+use axum::{Extension, Router};
 use sqlx::PgPool;
 use std::sync::Arc;
 use tower::ServiceBuilder;
@@ -39,6 +40,8 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 use tower_http::trace::TraceLayer;
 
+const SERVICE_PORT: &str = "0.0.0.0:8080";
+
 /// The core type through which handler functions can access common API state.
 ///
 /// This can be accessed by adding a parameter `Extension<ApiContext>` to a handler function's
@@ -74,7 +77,7 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
             // rather verbose compared to Actix-web's `Data::new()`.
             //
             // It seems very logically named, but that makes it a bit annoying to type over and over.
-            .layer(AddExtensionLayer::new(ApiContext {
+            .layer(Extension(ApiContext {
                 config: Arc::new(config),
                 db,
             }))
@@ -86,7 +89,7 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
     //
     // Note that any port below 1024 needs superuser privileges to bind on Linux,
     // so 80 isn't usually used as a default for that reason.
-    axum::Server::bind(&"0.0.0.0:8080".parse()?)
+    axum::Server::bind(&SERVICE_PORT.parse::<SocketAddr>()?)
         .serve(app.into_make_service())
         .await
         .context("error running HTTP server")

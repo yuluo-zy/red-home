@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::http::extractor::{AuthUser, MaybeAuthUser};
 use crate::http::profiles::Profile;
-use crate::http::types::Timestamptz;
+use crate::http::types::TimestampsZ;
 use crate::http::{ApiContext, Error, Result, ResultExt};
 
 mod comments;
@@ -76,10 +76,10 @@ struct Article {
     description: String,
     body: String,
     tag_list: Vec<String>,
-    created_at: Timestamptz,
+    created_at: TimestampsZ,
     // Note: the Postman collection included with the spec assumes that this is never null.
     // We prefer to leave it unset unless the row has actually be updated.
-    updated_at: Timestamptz,
+    updated_at: TimestampsZ,
     favorited: bool,
     favorites_count: i64,
     author: Profile,
@@ -98,8 +98,8 @@ struct ArticleFromQuery {
     description: String,
     body: String,
     tag_list: Vec<String>,
-    created_at: Timestamptz,
-    updated_at: Timestamptz,
+    created_at: TimestampsZ,
+    updated_at: TimestampsZ,
     favorited: bool,
     favorites_count: i64,
     author_username: String,
@@ -164,8 +164,8 @@ async fn create_article(
                     body, 
                     tag_list, 
                     -- This is how you can override the inferred type of a column.
-                    created_at "created_at: Timestamptz", 
-                    updated_at "updated_at: Timestamptz"
+                    created_at "created_at: TimestampsZ", 
+                    updated_at "updated_at: TimestampsZ"
             )
             select 
                 inserted_article.*,
@@ -252,8 +252,8 @@ async fn update_article(
                     description,
                     body,
                     tag_list,
-                    article.created_at "created_at: Timestamptz",
-                    article.updated_at "updated_at: Timestamptz"
+                    article.created_at "created_at: TimestampsZ",
+                    article.updated_at "updated_at: TimestampsZ"
             )
             select
                 updated_article.*,
@@ -363,8 +363,8 @@ async fn get_article(
                 description,
                 body,
                 tag_list,
-                article.created_at "created_at: Timestamptz",
-                article.updated_at "updated_at: Timestamptz",
+                article.created_at "created_at: TimestampsZ",
+                article.updated_at "updated_at: TimestampsZ",
                 exists(select 1 from article_favorite where user_id = $1) "favorited!",
                 coalesce(
                     -- `count(*)` returns `NULL` if the query returned zero columns
@@ -513,8 +513,8 @@ async fn article_by_id(
                 description,
                 body,
                 tag_list,
-                article.created_at "created_at: Timestamptz",
-                article.updated_at "updated_at: Timestamptz",
+                article.created_at "created_at: TimestampsZ",
+                article.updated_at "updated_at: TimestampsZ",
                 exists(select 1 from article_favorite where user_id = $1) "favorited!",
                 coalesce(
                     -- `count(*)` returns `NULL` if the query returned zero columns

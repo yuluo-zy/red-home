@@ -1,7 +1,8 @@
 use serde::de::Visitor;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::Formatter;
-use time::{Format, OffsetDateTime};
+use time::{OffsetDateTime};
+use time::format_description::well_known::Rfc3339;
 
 /// `OffsetDateTime` provides RFC-3339 (ISO-8601 subset) serialization, but the default
 /// `serde::Serialize` implementation produces array of integers, which is great for binary
@@ -19,18 +20,18 @@ use time::{Format, OffsetDateTime};
 ///   for setting the expiration
 ///     * not really Chrono's fault but certainly doesn't help.
 #[derive(sqlx::Type)]
-pub struct Timestamptz(pub OffsetDateTime);
+pub struct TimestampsZ(pub OffsetDateTime);
 
-impl Serialize for Timestamptz {
+impl Serialize for TimestampsZ {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        serializer.collect_str(&self.0.lazy_format(Format::Rfc3339))
+        serializer.collect_str(&format_args!("{:?}",&self.0.format(&Rfc3339)))
     }
 }
 
-impl<'de> Deserialize<'de> for Timestamptz {
+impl<'de> Deserialize<'de> for TimestampsZ {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -50,7 +51,7 @@ impl<'de> Deserialize<'de> for Timestamptz {
         //
         // However, I also wanted to demonstrate that it was possible to do this with Serde alone.
         impl Visitor<'_> for StrVisitor {
-            type Value = Timestamptz;
+            type Value = TimestampsZ;
 
             fn expecting(&self, f: &mut Formatter) -> std::fmt::Result {
                 f.pad("expected string")
@@ -60,8 +61,8 @@ impl<'de> Deserialize<'de> for Timestamptz {
             where
                 E: serde::de::Error,
             {
-                OffsetDateTime::parse(v, Format::Rfc3339)
-                    .map(Timestamptz)
+                OffsetDateTime::parse(v, &Rfc3339)
+                    .map(TimestampsZ)
                     .map_err(E::custom)
             }
         }

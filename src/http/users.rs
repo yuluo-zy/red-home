@@ -127,7 +127,7 @@ async fn login_user(
     }))
 }
 
-// https://realworld-docs.netlify.app/docs/specs/backend-specs/endpoints#get-current-user
+
 async fn get_current_user(
     auth_user: AuthUser,
     ctx: Extension<ApiContext>,
