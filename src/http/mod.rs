@@ -31,6 +31,7 @@ mod types;
 //
 // See `api_router()` below for the recommended order.
 mod users;
+mod temperature;
 
 pub use error::{Error, ResultExt};
 
