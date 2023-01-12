@@ -30,8 +30,6 @@ mod types;
 // are more stream-of-consciousness and assume you read them in a particular order.
 //
 // See `api_router()` below for the recommended order.
-mod articles;
-mod profiles;
 mod users;
 
 pub use error::{Error, ResultExt};
@@ -98,6 +96,4 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
 fn api_router() -> Router {
     // This is the order that the modules were authored in.
     users::router()
-        .merge(profiles::router())
-        .merge(articles::router())
 }

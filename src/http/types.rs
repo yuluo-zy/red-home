@@ -20,9 +20,9 @@ use time::format_description::well_known::Rfc3339;
 ///   for setting the expiration
 ///     * not really Chrono's fault but certainly doesn't help.
 #[derive(sqlx::Type)]
-pub struct TimestampsZ(pub OffsetDateTime);
+pub struct timestamptz(pub OffsetDateTime);
 
-impl Serialize for TimestampsZ {
+impl Serialize for timestamptz {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -31,7 +31,7 @@ impl Serialize for TimestampsZ {
     }
 }
 
-impl<'de> Deserialize<'de> for TimestampsZ {
+impl<'de> Deserialize<'de> for timestamptz {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -51,7 +51,7 @@ impl<'de> Deserialize<'de> for TimestampsZ {
         //
         // However, I also wanted to demonstrate that it was possible to do this with Serde alone.
         impl Visitor<'_> for StrVisitor {
-            type Value = TimestampsZ;
+            type Value = timestamptz;
 
             fn expecting(&self, f: &mut Formatter) -> std::fmt::Result {
                 f.pad("expected string")
@@ -62,7 +62,7 @@ impl<'de> Deserialize<'de> for TimestampsZ {
                 E: serde::de::Error,
             {
                 OffsetDateTime::parse(v, &Rfc3339)
-                    .map(TimestampsZ)
+                    .map(timestamptz)
                     .map_err(E::custom)
             }
         }
