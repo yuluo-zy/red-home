@@ -1,12 +1,12 @@
 use crate::http::{ApiContext, Result};
-use anyhow::Context;
+
 use axum::extract::{Extension, Query};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use clap::builder::Str;
-use time::{PrimitiveDateTime, Time};
+use chrono::{DateTime, Local};
 
-use crate::http::error::{Error, ResultExt};
+
+use crate::http::error::{ResultExt};
 
 pub fn router() -> Router {
     Router::new()
@@ -28,14 +28,14 @@ struct NewTarget {
 #[derive(serde::Deserialize,serde::Serialize)]
 struct DateTarget {
     data: f64,
-    date: PrimitiveDateTime,
+    date: Option<DateTime<Local>>,
 }
 
 #[derive(serde::Deserialize)]
 pub struct DataQuery {
     data_type: String,
-    start_date: PrimitiveDateTime,
-    end_date: PrimitiveDateTime
+    start_date: DateTime<Local>,
+    end_date: DateTime<Local>
 }
 
 #[axum::debug_handler]

@@ -15,7 +15,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 use tower_http::trace::TraceLayer;
 
-const SERVICE_PORT: &str = "0.0.0.0:8080";
+const SERVICE_PORT: &str = "0.0.0.0:8088";
 
 #[derive(Clone)]
 struct ApiContext {
