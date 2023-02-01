@@ -1,4 +1,27 @@
-const url = "http://www.wap.cnyiot.com/(S(n2nuzsitdww4rxncbfb3v4wn))/nat/pay.aspx?code=0617Nc000ZNhnP1wnt100KzBp137Nc0Y&state=18100647504"
-pub struct Electricity {
+use crate::crawlers::Spider;
 
+const url :&str = "http://www.wap.cnyiot.com/nat/nat.aspx?id=ofQeSQvSx4TKbA3zLZDW9g%3D%3D&by=a";
+
+#[derive(Clone, Default)]
+pub struct Electricity {
+    remainder: f64,
+    unit: u8
+}
+
+impl Spider<Electricity> for Electricity {
+    fn name(&self) -> String {
+       "电费".into_string()
+    }
+
+    fn urls(&self) -> &str{
+        url
+    }
+
+    fn scrape(&self, html: String) -> anyhow::Result<Electricity> {
+        todo!()
+    }
+
+    fn subsequent(&self) {
+        todo!()
+    }
 }
