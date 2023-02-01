@@ -13,6 +13,7 @@ use tracing::Level;
 use tracing_subscriber::fmt;
 
 use red_home::config::Config;
+use red_home::crawlers::init_task;
 use red_home::http;
 
 #[tokio::main]
@@ -27,6 +28,7 @@ async fn main() -> anyhow::Result<()> {
         .connect(&config.database_url)
         .await
         .context("could not connect to database_url")?;
+    init_task();
 
     http::serve(config, db).await?;
 
