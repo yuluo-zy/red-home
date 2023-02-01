@@ -28,8 +28,6 @@ async fn main() -> anyhow::Result<()> {
         .await
         .context("could not connect to database_url")?;
 
-    // sqlx::migrate!().run(&db).await?;
-
     http::serve(config, db).await?;
 
     Ok(())

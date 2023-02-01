@@ -3,10 +3,7 @@ use crate::http::{ApiContext, Result};
 use axum::extract::{Extension, Query};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use chrono::{DateTime, Local};
-
-
-use crate::http::error::{ResultExt};
+use chrono::{DateTime, Utc};
 
 pub fn router() -> Router {
     Router::new()
@@ -28,14 +25,14 @@ struct NewTarget {
 #[derive(serde::Deserialize,serde::Serialize)]
 struct DateTarget {
     data: f64,
-    date: Option<DateTime<Local>>,
+    date: Option<DateTime<Utc>>,
 }
 
 #[derive(serde::Deserialize)]
 pub struct DataQuery {
     data_type: String,
-    start_date: DateTime<Local>,
-    end_date: DateTime<Local>
+    start_date: DateTime<Utc>,
+    end_date: DateTime<Utc>
 }
 
 #[axum::debug_handler]
@@ -59,7 +56,7 @@ async fn submit_date(
     ctx: Extension<ApiContext>,
     Json(req): Json<NewTarget>,
 ) -> Result<Json<TargetBody<bool>>> {
-    let res = sqlx::query!(
+    sqlx::query!(
         "insert into temperature ( temperature, humidity) values (?, ?) ",
         req.temperature,
         req.humidity,
