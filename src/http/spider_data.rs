@@ -9,7 +9,7 @@ use sqlx::MySqlPool;
 
 pub fn router() -> Router {
     Router::new()
-        .route("/api/electricity", get(get_parameters))
+        .route("/api/electricity", get(get_electricity))
         .route("/api/get_water", get(get_water))
 }
 
@@ -19,10 +19,10 @@ struct TargetBody<T> {
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Default)]
-struct DateTarget {
-    remainder: f64,
-    unit: i32,
-    created_at: Option<DateTime<Utc>>,
+pub struct DateTarget {
+    pub(crate) remainder: f64,
+    pub unit: f64,
+    pub created_at: Option<DateTime<Utc>>,
 }
 
 #[derive(serde::Deserialize)]
@@ -33,11 +33,11 @@ pub struct DataQuery {
 
 #[async_trait]
 impl CRUDData<DateTarget, DataQuery> for DateTarget {
-    async fn save(data: Self, conn: &MySqlPool) -> Result<()> {
+    async fn save(self, conn: &MySqlPool) -> Result<()> {
         sqlx::query!(
             "insert into electricity (remainder, unit) values (?, ?) ",
-            data.remainder,
-            data.unit,
+            self.remainder,
+            self.unit,
         )
         .execute(conn)
         .await?;
@@ -58,19 +58,19 @@ impl CRUDData<DateTarget, DataQuery> for DateTarget {
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Default)]
-struct Water {
-    remainder: f64,
-    unit: i32,
-    created_at: Option<DateTime<Utc>>,
+pub struct Water {
+    pub remainder: f64,
+    pub unit: f64,
+    pub created_at: Option<DateTime<Utc>>,
 }
 
 #[async_trait]
 impl CRUDData<Water, DataQuery> for Water {
-    async fn save(data: Self, conn: &MySqlPool) -> Result<()> {
+    async fn save(self, conn: &MySqlPool) -> Result<()> {
         sqlx::query!(
             "insert into water (remainder, unit) values (?, ?) ",
-            data.remainder,
-            data.unit,
+            self.remainder,
+            self.unit,
         )
         .execute(conn)
         .await?;
@@ -90,7 +90,7 @@ impl CRUDData<Water, DataQuery> for Water {
     }
 }
 
-async fn get_parameters(
+async fn get_electricity(
     ctx: Extension<ApiContext>,
     query: Query<DataQuery>,
 ) -> Result<Json<TargetBody<Vec<DateTarget>>>> {

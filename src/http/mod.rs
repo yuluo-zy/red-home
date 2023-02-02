@@ -10,7 +10,7 @@ use std::sync::Arc;
 use tower::ServiceBuilder;
 
 mod error;
-mod spider_data;
+pub mod spider_data;
 mod temperature;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -21,7 +21,7 @@ const SERVICE_PORT: &str = "0.0.0.0:8088";
 
 #[async_trait]
 pub trait CRUDData<I, Q> {
-    async fn save(data: I, conn: &MySqlPool) -> Result<()>;
+    async fn save(self, conn: &MySqlPool) -> Result<()>;
     async fn find(query: Q, conn: &MySqlPool) -> Result<Vec<I>>;
 }
 

@@ -26,7 +26,7 @@ tower-http = { version = "0.3", features = ["trace"] }
 chrono = {version =  "0.4.23", features = ["alloc", "std","clock","serde","unstable-locales"] }
 uuid = { version = "1.2", features = ["serde"] }
 reqwest = "0.11.13"
-sxd-xpath = "0.4.2"
+scraper = "0.14.0"
 
 # Utility Crates
 anyhow = "1.0"
