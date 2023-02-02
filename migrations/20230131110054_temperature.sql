@@ -20,3 +20,23 @@ CREATE TABLE `temperature`
     created_at  Timestamp DEFAULT CURRENT_TIMESTAMP,
     updated_at  Timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+DROP TABLE IF EXISTS `electricity`;
+
+CREATE TABLE `electricity`
+(
+    remainder DOUBLE NOT NULL,
+    unit    INT NOT NULL,
+    created_at  Timestamp DEFAULT CURRENT_TIMESTAMP,
+    updated_at  Timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS `water`;
+
+CREATE TABLE `water`
+(
+    remainder DOUBLE NOT NULL,
+    unit    INT NOT NULL,
+    created_at  Timestamp DEFAULT CURRENT_TIMESTAMP,
+    updated_at  Timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
