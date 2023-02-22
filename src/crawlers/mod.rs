@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use scraper::{Html, Selector};
 use sqlx::MySqlPool;
@@ -25,10 +25,10 @@ pub trait Spider {
         let fragment = Html::parse_fragment(&*html);
         let selector1 = Selector::parse("#body > div:nth-child(2) > div:nth-child(2) > label").unwrap();
         let selector2 = Selector::parse("#body > div:nth-child(2) > div:nth-child(3) > label").unwrap();
-        let h1 = fragment.select(&selector1).next().unwrap();
-        let remainder = h1.text().collect::<Vec<&str>>().join("").parse::<f64>()?;
-        let h2 = fragment.select(&selector2).next().unwrap();
-        let unit = h2.text().collect::<Vec<&str>>().join("").parse::<f64>()?;
+        let h1 = fragment.select(&selector1).next().ok_or(anyhow!("获取实时值失败"));
+        let remainder = h1?.text().collect::<Vec<&str>>().join("").parse::<f64>()?;
+        let h2 = fragment.select(&selector2).next().ok_or(anyhow!("获取单位值失败"));
+        let unit = h2?.text().collect::<Vec<&str>>().join("").parse::<f64>()?;
         Ok((remainder, unit))
     }
 }
